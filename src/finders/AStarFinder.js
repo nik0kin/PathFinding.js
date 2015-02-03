@@ -20,6 +20,7 @@ function AStarFinder(opt) {
     opt = opt || {};
     this.allowDiagonal = opt.allowDiagonal;
     this.dontCrossCorners = opt.dontCrossCorners;
+    this.dontPassDeltasToHeuristic = opt.dontPassDeltasToHeuristic || false;
     this.heuristic = opt.heuristic || Heuristic.manhattan;
     this.weight = opt.weight || 1;
     this.diagonalMovement = opt.diagonalMovement;
@@ -101,7 +102,14 @@ AStarFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
             // can be reached with smaller cost from the current node
             if (!neighbor.opened || ng < neighbor.g) {
                 neighbor.g = ng;
-                neighbor.h = neighbor.h || weight * heuristic(abs(x - endX), abs(y - endY));
+
+                if (!neighbor.h) {
+                    if (this.dontPassDeltasToHeuristic) {
+                        neighbor.h = neighbor.h || weight * heuristic(x, y, endX, endY);
+                    } else {
+                        neighbor.h = neighbor.h || weight * heuristic(x - endX, y - endY);
+                    }
+                }
                 neighbor.f = neighbor.g + neighbor.h;
                 neighbor.parent = node;
 
